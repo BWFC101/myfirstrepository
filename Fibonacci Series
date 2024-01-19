@@ -1,0 +1,23 @@
+def fibonacci_series(count):
+    fib_series = []
+    
+    a, b = 0, 1
+    
+    for _ in range(count):
+        fib_series.append(a)
+        a, b = b, a + b
+    
+    return fib_series
+
+def main():
+    count = int(input("Enter the count of Fibonacci numbers: "))
+    
+    if count <= 0:
+        print("Please enter a positive count.")
+        return
+
+    series = fibonacci_series(count)
+    
+    print(f"Fibonacci series for count {count}: {series}")
+
+main()
