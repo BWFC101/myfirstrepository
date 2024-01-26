@@ -1,0 +1,11 @@
+def calculate_the_average(numbers):
+
+    total_sum = sum(numbers)
+    
+    average = total_sum / len(numbers)
+    
+    return average
+
+numbers = [1, 2, 3, 4, 5]
+average = calculate_the_average(numbers)
+print("Average:", average)
