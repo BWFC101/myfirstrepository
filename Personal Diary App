@@ -1,0 +1,54 @@
+import os
+from datetime import datetime
+
+def create_entry(entry, timestamp=False):
+    try:
+        with open("diary.txt", "a") as file:
+            if timestamp:
+                timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                file.write(f"{timestamp_str}: {entry}\n")
+            else:
+                file.write(f"{entry}\n")
+        print("Diary entry created successfully.")
+    except IOError as e:
+        print(f"Error: {e}")
+
+def view_entries():
+    try:
+        with open("diary.txt", "r") as file:
+            entries = file.readlines()
+            if entries:
+                print("Previous diary entries:")
+                for entry in entries:
+                    print(entry.strip())
+            else:
+                print("No previous diary entries found.")
+    except FileNotFoundError:
+        print("Diary file not found.")
+    except PermissionError:
+        print("Permission denied to access the diary file.")
+
+def main():
+    while True:
+        print("\n1. Create a new diary entry")
+        print("2. View previous diary entries")
+        print("3. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            entry = input("Enter your diary entry: ")
+            timestamp_choice = input("Do you want to add timestamp? (yes/no): ").lower()
+            if timestamp_choice == "yes":
+                create_entry(entry, timestamp=True)
+            else:
+                create_entry(entry)
+        elif choice == "2":
+            view_entries()
+        elif choice == "3":
+            print("Exiting the diary application.")
+            break
+        else:
+            print("Invalid choice. Please enter a valid option.")
+
+if __name__ == "__main__":
+    main()
