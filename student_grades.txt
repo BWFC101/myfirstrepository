@@ -1,0 +1,6 @@
+Math: 75.0
+Spanish: 80.0
+IT: 90.0
+History: 86.0
+DesTech: 79.0
+PE: 95.0
