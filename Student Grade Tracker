@@ -1,0 +1,46 @@
+def input_grades():
+    grades = {}
+    try:
+        num_subjects = int(input("Enter the number of subjects: "))
+        for i in range(num_subjects):
+            subject = input(f"Enter the name of subject {i + 1}: ")
+            while True:
+                try:
+                    grade = float(input(f"Enter the grade for {subject}: "))
+                    if 0 <= grade <= 100:
+                        grades[subject] = grade
+                        break
+                    else:
+                        print("Error: Grade must be between 0 and 100.")
+                except ValueError:
+                    print("Error: Please enter a numeric grade.")
+    except ValueError:
+        print("Error: Please enter a numeric value for the number of subjects.")
+    return grades
+
+def calculate_average(grades):
+    if grades:
+        total_grade = sum(grades.values())
+        average_grade = total_grade / len(grades)
+        return average_grade
+    else:
+        return None
+
+def store_grades(grades, filename):
+    try:
+        with open(filename, "w") as file:
+            for subject, grade in grades.items():
+                file.write(f"{subject}: {grade}\n")
+        print("Grades stored successfully.")
+    except Exception as e:
+        print(f"Error occurred while storing grades: {e}")
+
+grades = input_grades()
+
+average_grade = calculate_average(grades)
+if average_grade is not None:
+    print(f"Average grade: {average_grade:.2f}")
+else:
+    print("No grades available to calculate average.")
+
+store_grades(grades, "student_grades.txt")
