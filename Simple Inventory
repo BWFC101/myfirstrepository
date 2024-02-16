@@ -1,0 +1,77 @@
+class Product:
+  def __init__(self, name, price, quantity):
+    self.name = name
+    self.price = price
+    self.quantity = quantity
+
+  def display_info(self):
+    print(f"Name: {self.name}")
+    print(f"Price: ${self.price:.2f}")
+    print(f"Quantity: {self.quantity}")
+
+  def update_quantity(self, delta):
+    self.quantity += delta
+    print(f"{delta} units of {self.name} {'added' if delta > 0 else 'removed'} from inventory.")
+
+  def calculate_value(self):
+    return self.price * self.quantity
+
+def add_product():
+  name = input("Enter product name: ")
+  price = float(input("Enter product price: "))
+  quantity = int(input("Enter initial quantity: "))
+  return Product(name, price, quantity)
+
+def main():
+  products = []
+  while True:
+    choice = input("\nMenu:\n1. Add product\n2. Display inventory\n3. Sell product\n4. Restock product\n5. Calculate total value\n6. Exit\nEnter your choice: ")
+    if choice == "1":
+      product = add_product()
+      products.append(product)
+      print("Product added successfully!")
+    elif choice == "2":
+      if not products:
+        print("No products in the inventory yet!")
+      else:
+        for product in products:
+          product.display_info()
+          print("=" * 20)
+    elif choice == "3":
+      name = input("Enter product name to sell: ")
+      found = False
+      for product in products:
+        if product.name == name:
+          quantity = int(input(f"Enter quantity of {name} to sell: "))
+          if quantity > product.quantity:
+            print(f"Insufficient stock. Only {product.quantity} units available.")
+          else:
+            product.update_quantity(-quantity)
+            found = True
+            break
+      if not found:
+        print(f"{name} not found in the inventory.")
+    elif choice == "4":
+      name = input("Enter product name to restock: ")
+      found = False
+      for product in products:
+        if product.name == name:
+          quantity = int(input(f"Enter quantity of {name} to add: "))
+          product.update_quantity(quantity)
+          found = True
+          break
+      if not found:
+        print(f"{name} not found in the inventory.")
+    elif choice == "5":
+      total_value = 0
+      for product in products:
+        total_value += product.calculate_value()
+      print(f"Total inventory value: ${total_value:.2f}")
+    elif choice == "6":
+      print("Exiting...")
+      break
+    else:
+      print("Invalid choice!")
+
+if __name__ == "__main__":
+  main()
