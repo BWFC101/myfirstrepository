@@ -1,0 +1,294 @@
+import random
+from datetime import datetime
+
+class Account:
+    def __init__(self, name, accountType, balance=0):
+        self.name = name
+        self.accountType = accountType
+        self.balance = balance
+        self.accountID = self.generate_account_id()
+        self.create_transaction_file()
+
+    def generate_account_id(self):
+        return str(random.randint(100000, 999999))
+
+    def create_transaction_file(self):
+        with open("all_transactions.txt", "a") as f: 
+            current_datetime = datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
+            f.write(f"{current_datetime}, {self.accountID}, {self.name}, {self.accountType}, {self.balance}\n")
+
+    def deposit(self, amount):
+        self.balance += amount
+        self.update_transaction_file("Deposit", amount)
+
+    def withdraw(self, amount):
+        if amount <= self.balance:
+            self.balance -= amount
+            self.update_transaction_file("Withdrawal", amount)
+        else:
+            print("Insufficient funds")
+
+    def update_transaction_file(self, transaction_type, amount):
+        with open("all_transactions.txt", "a") as f:
+            current_datetime = datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
+            f.write(f"{current_datetime}, {self.accountID}, {self.name}, {self.accountType}, {transaction_type}, {amount}\n")
+
+def transaction_history():
+    account_number = input("Enter Your RoboGarden Account Number: ")
+    with open("all_transactions.txt", "r") as f:
+        for line in f:
+            transaction_info = line.strip().split(", ")
+            if transaction_info[1] == account_number:
+                print("Date:", transaction_info[0])
+                print("Transaction Type:", transaction_info[4])
+                print("Amount:", transaction_info[5])
+                print("------------------------------")
+
+
+def read_file():
+    name_list = []
+    acc_num_list = []
+    acc_blc_list = []
+
+    with open("bank.txt", "r") as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if not line.strip():
+                continue
+
+            information = line.split(",")
+            if len(information) < 5:
+                print(f"Error: Missing fields in line: {line.strip()}")
+                continue
+
+            try:
+                account_number = information[0].strip()
+                balance = float(information[1].strip())
+            except ValueError as e:
+                print(f"Error processing line: {line.strip()}\n"
+                      f"Details: {e}")
+                continue  
+
+            
+            if not isinstance(balance, (float, int)) or balance < 0:
+                print(f"Invalid Balance Value ({balance}) For Account {account_number}. Setting to 0.0.")
+                balance = 0.0
+
+            
+            username = information[2].strip()
+            full_name = information[3].strip()
+            account_type = information[4].strip()
+
+            acc_num_list.append(account_number)
+            acc_blc_list.append(balance)
+            name_list.append((username, full_name, account_type))
+
+    return name_list, acc_num_list, acc_blc_list
+
+
+
+
+def main():
+    print("RoboGarden Banking System")
+    name_list, acc_num_list, acc_blc_list = read_file()  
+    with open("all_transactions.txt", "w") as f:
+        f.write("Date, Time, User ID, User Name, Account Type, Balance\n")
+
+    option = 0
+    account = None
+    while option != 8:
+
+        banking_options = ["1. Create Account", "2. Depositing Money", "3. Withdrawing Money",
+                           "4. Account Balance", "5. Transaction History", "6. Retrieving Account Information", "7. Close Account", "8. Quit"]
+
+        for opt in banking_options:
+            print(opt)
+        user_input = False
+
+        while not user_input:
+            try:
+                option = int(input("Please Enter An Option From The List:"))
+                if 0 < option < 9:
+                    user_input = True
+                else:
+                    print("\nPlease Enter A Number Greater Than 0 And Less Than 9\n")
+                    for opt in banking_options:
+                        print(opt)
+            except ValueError:
+                print("\nError -- Please Enter A Number Between 1 To 8 Only\n")
+                for opt in banking_options:
+                    print(opt)
+
+        if option == 1:
+            name_list, acc_num_list, acc_blc_list, account = open_acc(name_list, acc_num_list, acc_blc_list)
+
+        elif option == 2:
+            if account:
+                name_list, acc_num_list, acc_blc_list = add_money(name_list, acc_num_list, acc_blc_list, account)
+            else:
+                print("Please Create A RoboGaren Account First.")
+
+        elif option == 3:
+            if account:
+                name_list, acc_num_list, acc_blc_list = cash_out(name_list, acc_num_list, acc_blc_list, account)
+            else:
+                print("Please Create A RoboGaren Account First.")
+
+        elif option == 4:
+            name_list, acc_num_list, acc_blc_list = check_balance(name_list, acc_num_list, acc_blc_list)
+
+        elif option == 5:
+            transaction_history()
+
+        elif option == 6:
+            print("1. Retrieve User ID")
+            print("2. Retrieve Username")
+            print("3. Account Type")
+            sub_option = int(input("Please Enter An Option From The List: "))
+            if sub_option == 1:
+                retrieve_user_id(name_list, acc_num_list)
+            elif sub_option == 2:
+                retrieve_username(name_list, acc_num_list)
+            elif sub_option == 3:
+                retrieve_account_type(name_list, acc_num_list)
+
+        elif option == 7:
+            name_list, acc_num_list, acc_blc_list = close_acc(name_list, acc_num_list, acc_blc_list)
+
+
+        elif option == 8:
+            exit_program(name_list, acc_num_list, acc_blc_list)
+            print("Thank You For Using The RoboGarden Banking System")
+
+
+def retrieve_user_id(name_list, acc_num_list):
+    username = input("Please Enter Your RoboGarden Username: ")
+    full_name = input("Please Enter Your Full Name: ")
+    for i in range(len(name_list)):
+        if username == name_list[i][0] and full_name == name_list[i][1]:
+            print(f"Your RoboGarden User ID Is: {acc_num_list[i]}")
+            return
+    print("User ID Not Found For The Given Username & Full Name.")
+
+def retrieve_username(name_list, acc_num_list):
+    user_id = input("Please Enter Your RoboGarden User ID: ")
+    full_name = input("Please Enter Your Full Name: ")
+    for i in range(len(acc_num_list)):
+        if user_id == acc_num_list[i]:
+            if full_name == name_list[i][1]:
+                print(f"Your RoboGarden Username Is: {name_list[i][0]}")
+                return
+            else:
+                print("Full Name Does Not Match The Provided User ID.")
+                return
+    print("RoboGarden User ID Not Found.")
+
+def retrieve_account_type(name_list, acc_num_list):
+    username = input("Please Enter Your RoboGarden Username: ")
+    user_id = input("Please Enter Your RoboGarden User ID: ")
+    full_name = input("Please Enter Your Full Name: ")
+    for i in range(len(name_list)):
+        if username == name_list[i][0] and user_id == acc_num_list[i] and full_name == name_list[i][1]:
+            print(f"Your RoboGarden Account Type Is: {name_list[i][2]}")
+            return
+    print("RoboGarden Account Not Found.")
+
+def open_acc(name_list, acc_num_list, acc_blc_list):
+    username = input("Please Enter Your New RoboGarden Username: ")
+    full_name = input("Please Enter Your Full Name: ")
+    account_type = input("Enter Account Type (Chequing Or Savings): ").lower()
+    while account_type not in ("chequing", "savings"):
+        account_type = input("Invalid type. Enter 'Chequing' or 'Savings': ").lower()
+
+    default_balance = 0.0  
+    acc_blc_list.append(default_balance)  
+    account = Account(full_name, account_type, balance=default_balance)  
+    print("Your RoboGarden Account Number:", account.accountID)
+    acc_num_list.append(account.accountID)
+    acc_blc_list.append(default_balance)  
+
+    name_list.append((username, full_name, account_type))
+
+    with open("bank.txt", "a") as f:
+        f.write(f"{account.accountID}, {default_balance}, {username}, {full_name}, {account_type}\n")
+
+    print("RoboGarden Username:", name_list[-1][0])
+    print("Full Name:", name_list[-1][1])
+
+    return name_list, acc_num_list, acc_blc_list, account
+
+def close_acc(name_list, acc_num_list, acc_blc_list):
+    account_number = input("\nEnter Your RoboGarden Account Number:\n")
+    if account_number in acc_num_list:
+        index = acc_num_list.index(account_number)
+        username = name_list[index][0]
+        confirmation = input(
+            f"Are You Sure You Want To Close Your RoboGarden Account, {username}? (Yes/No): ").strip().lower()
+        if confirmation == 'yes':
+            print("\nSorry To See You Leave RoboGarden Bank", username, "\n")
+            del acc_num_list[index]
+            del acc_blc_list[index]
+            del name_list[index]
+        elif confirmation == 'no':
+            print("\nYour RoboGarden Account Has Not Been Closed.")
+        else:
+            print("\nInvalid Input. Please Enter 'Yes' Or 'No'.")
+    else:
+        print("\nError -- No Account Exists Under The Number You Provided\n")
+    return name_list, acc_num_list, acc_blc_list
+
+def cash_out(name_list, acc_num_list, acc_blc_list, account):
+    account_number = input("\nEnter Your RoboGarden Account Number:\n")
+    if account_number in acc_num_list:
+        index = acc_num_list.index(account_number)
+        withdraw_amount = float(input("Enter The Amount You Want To Withdraw:"))
+        if withdraw_amount <= acc_blc_list[index]:
+            acc_blc_list[index] -= withdraw_amount
+            account.withdraw(withdraw_amount)  
+            print(f"An Amount OF ${withdraw_amount:.2f} Is Removed From Your RoboGarden Account {account_number}")
+            print(f"Your Current RoboGarden Balance Is ${acc_blc_list[index]:.2f}")
+        else:
+            print("Insufficient Funds")
+    else:
+        print("\n Sorry That RoboGarden Account Number Does Not Exist \n")
+    return name_list, acc_num_list, acc_blc_list
+
+
+
+def add_money(name_list, acc_num_list, acc_blc_list, account):
+    account_number = input("\nEnter Your RoboGarden Account Number:\n")
+    if account_number in acc_num_list:
+        index = acc_num_list.index(account_number)
+        deposit_amount = float(input("Enter The Amount You Want To Deposit Into Your RoboGarden Account:"))
+        account.deposit(deposit_amount)  
+        acc_blc_list[index] += deposit_amount
+        print(f"An Amount OF ${deposit_amount:.2f} Was Added To Your RoboGarden Account {account_number}")
+        print(f"Your Current RoboGarden Balance Is ${acc_blc_list[index]:.2f}")
+    else:
+        print("\n Sorry That RoboGarden Account Number Does Not Exist \n")
+    return name_list, acc_num_list, acc_blc_list
+
+def check_balance(name_list, acc_num_list, acc_blc_list):
+    account_number = input("\nEnter Your RoboGarden Account Number:\n")
+    try:
+        index = acc_num_list.index(account_number)
+        username = name_list[index]
+        balance = acc_blc_list[index]
+        print(f"Username: {name_list[-1][0]}")
+        print(f"Your Current RoboGarden Balance Is: ${balance}")
+    except ValueError:
+        print("Error: RoboGarden Account Not Found.")
+    return name_list, acc_num_list, acc_blc_list
+
+def exit_program(name_list, acc_num_list, acc_blc_list):
+    with open("bank.txt", "a") as quit_file:
+        for i, user_data in enumerate(name_list):
+            acc_num = acc_num_list[i] if i < len(acc_num_list) else ""
+            balance = acc_blc_list[i] if i < len(acc_blc_list) else ""
+            save = f"{acc_num}, {balance}, {user_data[0]}, {user_data[1]}, {user_data[2]}\n"
+            quit_file.write(save)
+    
+
+
+main()
